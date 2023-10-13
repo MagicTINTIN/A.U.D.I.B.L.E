@@ -1,4 +1,9 @@
 build/*
 debug/*
+
+tests/build/*
+!tests/build/build.txt
+tests/debug/*
+!tests/debug/debug.txt
 *.out
 *.exe

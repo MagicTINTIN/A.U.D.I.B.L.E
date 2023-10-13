@@ -3,21 +3,23 @@ projectname="Audible"
 
 makearg=""
 cmakearg=""
+folder="build"
 for arg in "$@"; do
         
     if [ "$arg" = "--release" ]; then
         cmakearg+=" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-O3\" "
     elif [ "$arg" = "--debug" ]; then
+        folder="debug"
         cmakearg+=" -DCMAKE_BUILD_TYPE=Debug "
     elif [ "$arg" = "--fastcomile" ]; then
         makearg+=" -j4 "
     elif [ "$arg" = "--reset" ]; then
-        rm -rf build/*
+        rm -rf $folder/*
     fi
 done
 
-mkdir build 2>/dev/null
-cd build/
+mkdir $folder 2>/dev/null
+cd $folder/
 
 cmake $cmakearg ../sources
 if [[ $? != 0 ]]; then
@@ -34,9 +36,9 @@ if [[ $? != 0 ]]; then
     echo "Compilation of $projectname went wrong.$(tput sgr0)"
     cd ../
     exit $err
-elif [[ $? == 0 ]]; then
+else
     echo "$(tput setaf 2)$(tput bold)Compilation of $projectname finished.$(tput sgr0)
-    Execute $projectname++ with build/$projectname"
+Execute $projectname++ with $folder/$projectname"
 fi
 
 cd ../

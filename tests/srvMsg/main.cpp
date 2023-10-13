@@ -1,10 +1,10 @@
 #include <iostream>
 #include <boost/asio.hpp>
 
-void runServer() {
+void runServer(int const &port) {
     try {
         boost::asio::io_service io_service;
-        boost::asio::ip::tcp::acceptor acceptor(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 12345));
+        boost::asio::ip::tcp::acceptor acceptor(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));
 
         std::cout << "Server listening on port 12345..." << std::endl;
 
@@ -21,7 +21,14 @@ void runServer() {
     }
 }
 
-int main() {
-    runServer();
+int main(int argc, char const *argv[])
+{
+    if (argc != 2)
+    {
+        std::cerr << "Usage: srvMsg <port>\n";
+        return 1;
+    }
+    std::vector<std::string> args(argv, argv + argc);
+    runServer(atoi(argv[1]));
     return 0;
 }

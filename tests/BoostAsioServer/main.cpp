@@ -18,8 +18,8 @@ using boost::asio::ip::udp;
 class server
 {
 public:
-  server(boost::asio::io_context& io_context, short port)
-    : socket_(io_context, udp::endpoint(udp::v4(), port))
+  server(boost::asio::io_context &io_context, short port)
+      : socket_(io_context, udp::endpoint(udp::v4(), port))
   {
     do_receive();
   }
@@ -32,12 +32,18 @@ public:
         {
           if (!ec && bytes_recvd > 0)
           {
-            do_send(bytes_recvd);
+            size_t length = 0;
+            while (data_[length] != '\0')
+            {
+              length++;
+            }
+
+            std::string dataStr(data_, length);
+
+            std::cout << dataStr << std::endl;
+            //do_send(bytes_recvd);
           }
-          else
-          {
-            do_receive();
-          }
+          do_receive();
         });
   }
 
@@ -54,11 +60,14 @@ public:
 private:
   udp::socket socket_;
   udp::endpoint sender_endpoint_;
-  enum { max_length = 1024 };
+  enum
+  {
+    max_length = 1024
+  };
   char data_[max_length];
 };
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
   try
   {
@@ -74,7 +83,7 @@ int main(int argc, char* argv[])
 
     io_context.run();
   }
-  catch (std::exception& e)
+  catch (std::exception &e)
   {
     std::cerr << "Exception: " << e.what() << "\n";
   }

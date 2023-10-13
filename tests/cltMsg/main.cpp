@@ -1,30 +1,53 @@
 #include <iostream>
 #include <boost/asio.hpp>
+#include <boost/asio/ts/buffer.hpp>
+#include <boost/asio/ts/internet.hpp>
 
-void runClient() {
-    try {
-        boost::asio::io_service io_service;
-        boost::asio::ip::tcp::resolver resolver(io_service);
-        boost::asio::ip::tcp::resolver::query query("localhost", "12345");
-        boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-        boost::asio::ip::tcp::socket socket(io_service);
-        
-        boost::asio::connect(socket, endpoint_iterator);
+using boost::asio::ip::udp;
 
-        boost::asio::streambuf response;
-        boost::asio::read(socket, response);
+enum
+{
+    max_length = 1024
+};
 
-        std::istream response_stream(&response);
-        std::string message;
-        std::getline(response_stream, message);
+void runClient(std::string &ip, std::string &port, char const *argv[])
+{
+    try
+    {
+        boost::asio::io_context io_context;
 
-        std::cout << "Received message from server: " << message << std::endl;
-    } catch (std::exception& e) {
+        udp::socket s(io_context, udp::endpoint(udp::v4(), 0));
+
+        udp::resolver resolver(io_context);
+        udp::endpoint endpoint =
+            *resolver.resolve(udp::v4(), argv[1], argv[2]).begin();
+
+        std::cout << "Trying to access server " << ip << ":" << port << std::endl;
+
+        while (true)
+        {
+            std::cout << "Enter message: ";
+            char request[max_length] = "";
+            std::cin.getline(request, max_length - 1);
+            size_t request_length = std::strlen(request);
+            request[request_length] = '\0';
+            s.send_to(boost::asio::buffer(request, request_length + 1), endpoint);
+        }
+    }
+    catch (std::exception &e)
+    {
         std::cerr << "Client Exception: " << e.what() << std::endl;
     }
 }
 
-int main() {
-    runClient();
+int main(int argc, char const *argv[])
+{
+    if (argc != 3)
+    {
+        std::cerr << "Usage: cltMsg <host> <port>\n";
+        return 1;
+    }
+    std::vector<std::string> args(argv, argv + argc);
+    runClient(args[1], args[2], argv);
     return 0;
 }

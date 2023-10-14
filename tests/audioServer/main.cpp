@@ -1,6 +1,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <pulse/simple.h>
+#include <pulse/error.h>
 
 constexpr int SAMPLE_RATE = 44100;
 constexpr int FRAME_SIZE = 1024;
@@ -19,7 +20,7 @@ int main() {
     int error;
 
     if (!(s = pa_simple_new(nullptr, "DesktopAudioCapture", PA_STREAM_RECORD, nullptr, "audio", &sample_spec, nullptr, nullptr, &error))) {
-        std::cerr << "pa_simple_new() failed: " << error << std::endl;
+        std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
         return 1;
     }
 

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <pulse/simple.h>
+#include <pulse/error.h>
 
 constexpr int SAMPLE_RATE = 44100;
 constexpr int FRAME_SIZE = 1024;
@@ -19,7 +20,7 @@ int main() {
     int error;
 
     if (!(s = pa_simple_new(nullptr, "DesktopAudioPlayer", PA_STREAM_PLAYBACK, nullptr, "audio", &sample_spec, nullptr, nullptr, &error))) {
-        std::cerr << "pa_simple_new() failed: " << error << std::endl;
+        std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
         return 1;
     }
 
@@ -28,7 +29,7 @@ int main() {
         socket.receive(boost::asio::buffer(buf, sizeof(buf)));
 
         if (pa_simple_write(s, buf, sizeof(buf), &error) < 0) {
-            std::cerr << "pa_simple_write() failed: " << error << std::endl;
+            std::cerr << "pa_simple_write() failed: " << pa_strerror(error) << std::endl;
             pa_simple_free(s);
             return 1;
         }

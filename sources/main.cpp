@@ -15,6 +15,57 @@ enum
 constexpr int SAMPLE_RATE = 44100;
 constexpr int FRAME_SIZE = 1024;
 
+class server
+{
+public:
+    server(boost::asio::io_context &io_context, short port, pa_simple *sAudioServer)
+        : socket_(io_context, udp::endpoint(udp::v4(), port))
+    {
+        do_receive(sAudioServer);
+    }
+
+    void do_receive(pa_simple *sAudioServer)
+    {
+        socket_.async_receive_from(
+            boost::asio::buffer(data_, max_length), sender_endpoint_,
+            [this, sAudioServer](boost::system::error_code ec, std::size_t bytes_recvd)
+            {
+                if (!ec && bytes_recvd > 0)
+                {
+                    int error;
+                    int16_t bufAudio[FRAME_SIZE]; //// * 2];
+
+                    if (pa_simple_write(sAudioServer, data_, bytes_recvd, &error) < 0)
+                    {
+                        std::cerr << "pa_simple_write() failed: " << pa_strerror(error) << std::endl;
+                        pa_simple_free(sAudioServer);
+                        return;
+                    }
+                }
+                do_receive(sAudioServer);
+            });
+    }
+
+    void do_send(std::size_t length, pa_simple *sAudioServer)
+    {
+        socket_.async_send_to(
+            boost::asio::buffer(data_, length), sender_endpoint_,
+            [this, sAudioServer](boost::system::error_code /*ec*/, std::size_t /*bytes_sent*/)
+            {
+                do_receive(sAudioServer);
+            });
+    }
+
+private:
+    udp::socket socket_;
+    udp::endpoint sender_endpoint_;
+    enum
+    {
+        max_length = 1024
+    };
+    char data_[max_length];
+};
+
 int runClient(std::string &ip, std::string &port, char const *argv[])
 {
     try
@@ -49,7 +100,7 @@ int runClient(std::string &ip, std::string &port, char const *argv[])
 
         while (true)
         {
-            int16_t bufAudio[FRAME_SIZE * 2];
+            int16_t bufAudio[FRAME_SIZE]; //// * 2];
             if (pa_simple_read(sAudio, bufAudio, sizeof(bufAudio), &error) < 0)
             {
                 std::cerr << "pa_simple_read() failed: " << error << std::endl;
@@ -82,7 +133,28 @@ int main(int argc, char const *argv[])
     if (args[1] == "-s" || args[1] == "--server")
     {
         std::cout << "Starting A.U.D.I.B.L.E server on port " << args[2] << "..." << std::endl;
-        endStatus = 5;
+
+        boost::asio::io_context io_context;
+
+        pa_sample_spec sample_spec;
+        sample_spec.format = PA_SAMPLE_S16LE;
+        sample_spec.rate = SAMPLE_RATE;
+        sample_spec.channels = 2;
+
+        pa_simple *sAudioServer = nullptr;
+        int error;
+
+        if (!(sAudioServer = pa_simple_new(nullptr, "DesktopAudioPlayer", PA_STREAM_PLAYBACK, nullptr, "audio", &sample_spec, nullptr, nullptr, &error)))
+        {
+            std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
+            return 1;
+        }
+
+        server s(io_context, std::atoi(argv[2]), sAudioServer);
+
+        io_context.run();
+
+        pa_simple_free(sAudioServer);
     }
     else
     {

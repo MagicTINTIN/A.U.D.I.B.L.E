@@ -1,7 +1,94 @@
+#include <boost/asio.hpp>
+#include <pulse/simple.h>
+#include <pulse/error.h>
 #include <iostream>
+#include <boost/asio/ts/buffer.hpp>
+#include <boost/asio/ts/internet.hpp>
+
+using boost::asio::ip::udp;
+
+enum
+{
+    max_length = 1024
+};
+
+constexpr int SAMPLE_RATE = 44100;
+constexpr int FRAME_SIZE = 1024;
+
+int runClient(std::string &ip, std::string &port, char const *argv[])
+{
+    try
+    {
+        // boost::asio::io_service io_service;
+        // boost::asio::ip::udp::socket socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12345));
+        // boost::asio::ip::udp::endpoint remote_endpoint;
+
+        pa_sample_spec sample_spec;
+        sample_spec.format = PA_SAMPLE_S16LE;
+        sample_spec.rate = SAMPLE_RATE;
+        sample_spec.channels = 2;
+
+        pa_simple *sAudio = nullptr;
+        int error;
+
+        if (!(sAudio = pa_simple_new(nullptr, "DesktopAudioCapture", PA_STREAM_RECORD, nullptr, "audio", &sample_spec, nullptr, nullptr, &error)))
+        {
+            std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
+            return 1;
+        }
+
+        boost::asio::io_context io_context;
+
+        udp::socket sSocket(io_context, udp::endpoint(udp::v4(), 0));
+
+        udp::resolver resolver(io_context);
+        udp::endpoint endpoint =
+            *resolver.resolve(udp::v4(), argv[1], argv[2]).begin();
+
+        std::cout << "Trying to access server " << ip << ":" << port << std::endl;
+
+        while (true)
+        {
+            int16_t bufAudio[FRAME_SIZE * 2];
+            if (pa_simple_read(sAudio, bufAudio, sizeof(bufAudio), &error) < 0)
+            {
+                std::cerr << "pa_simple_read() failed: " << error << std::endl;
+                pa_simple_free(sAudio);
+                return 1;
+            }
+
+            sSocket.send_to(boost::asio::buffer(bufAudio, sizeof(bufAudio)), endpoint);
+        }
+
+        pa_simple_free(sAudio);
+    }
+    catch (std::exception &e)
+    {
+        std::cerr << "Client Exception: " << e.what() << std::endl;
+        return 2;
+    }
+    return 0;
+}
 
 int main(int argc, char const *argv[])
 {
-    std::cout << "Hello world!" << std::endl;
-    return 0;
+    int endStatus(0);
+    if (argc != 3)
+    {
+        std::cerr << "Usage: Audible <host> <port>\nOr Audible -s|--server <port>";
+        return 1;
+    }
+    std::vector<std::string> args(argv, argv + argc);
+    if (args[1] == "-s" || args[1] == "--server")
+    {
+        std::cout << "Starting A.U.D.I.B.L.E server on port " << args[2] << "..." << std::endl;
+        endStatus = 5;
+    }
+    else
+    {
+        std::cout << "Starting A.U.D.I.B.L.E client..." << std::endl;
+        endStatus = runClient(args[1], args[2], argv);
+    }
+
+    return endStatus;
 }

@@ -9,7 +9,7 @@ constexpr int FRAME_SIZE = 1024;
 int main() {
     boost::asio::io_service io_service;
     boost::asio::ip::udp::socket socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
-    boost::asio::ip::udp::endpoint server_endpoint(boost::asio::ip::address::from_string("192.168.1.195"), 12345);
+    boost::asio::ip::udp::endpoint server_endpoint(boost::asio::ip::address::from_string("192.168.1.223"), 12345);
 
     pa_sample_spec sample_spec;
     sample_spec.format = PA_SAMPLE_S16LE;

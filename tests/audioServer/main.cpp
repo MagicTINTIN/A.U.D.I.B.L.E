@@ -19,14 +19,14 @@ int main() {
     int error;
 
     if (!(s = pa_simple_new(nullptr, "DesktopAudioCapture", PA_STREAM_RECORD, nullptr, "audio", &sample_spec, nullptr, nullptr, &error))) {
-        std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
+        std::cerr << "pa_simple_new() failed: " << error << std::endl;
         return 1;
     }
 
     while (true) {
         int16_t buf[FRAME_SIZE * 2];
         if (pa_simple_read(s, buf, sizeof(buf), &error) < 0) {
-            std::cerr << "pa_simple_read() failed: " << pa_strerror(error) << std::endl;
+            std::cerr << "pa_simple_read() failed: " << error << std::endl;
             pa_simple_free(s);
             return 1;
         }

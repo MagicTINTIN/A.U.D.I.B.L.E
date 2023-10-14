@@ -13,7 +13,7 @@ enum
 };
 
 constexpr int SAMPLE_RATE = 44100;
-constexpr int FRAME_SIZE = 512;//1024;
+constexpr int FRAME_SIZE = 1024/4;//1024;
 
 class server
 {
@@ -144,7 +144,7 @@ int main(int argc, char const *argv[])
         pa_simple *sAudioServer = nullptr;
         int error;
 
-        if (!(sAudioServer = pa_simple_new(nullptr, "A.U.D.I.B.L.E Player < (Server)", PA_STREAM_PLAYBACK, nullptr, "audio", &sample_spec, nullptr, nullptr, &error)))
+        if (!(sAudioServer = pa_simple_new(nullptr, "A.U.D.I.B.L.E Player < (Server)", PA_STREAM_PLAYBACK, nullptr, "playback", &sample_spec, nullptr, nullptr, &error)))
         {
             std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
             return 1;

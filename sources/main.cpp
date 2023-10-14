@@ -82,7 +82,7 @@ int runClient(std::string &ip, std::string &port, char const *argv[])
         pa_simple *sAudio = nullptr;
         int error;
 
-        if (!(sAudio = pa_simple_new(nullptr, "A.U.D.I.B.L.E Player > (Server)", PA_STREAM_RECORD, nullptr, "audio", &sample_spec, nullptr, nullptr, &error)))
+        if (!(sAudio = pa_simple_new(nullptr, "A.U.D.I.B.L.E Capture < (Client)", PA_STREAM_RECORD, "alsa_output.pci-0000_00_0e.0.analog-stereo.monitor", "record", &sample_spec, nullptr, nullptr, &error)))
         {
             std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
             return 1;
@@ -144,7 +144,7 @@ int main(int argc, char const *argv[])
         pa_simple *sAudioServer = nullptr;
         int error;
 
-        if (!(sAudioServer = pa_simple_new(nullptr, "A.U.D.I.B.L.E Capture < (Client)", PA_STREAM_PLAYBACK, nullptr, "audio", &sample_spec, nullptr, nullptr, &error)))
+        if (!(sAudioServer = pa_simple_new(nullptr, "A.U.D.I.B.L.E Player < (Server)", PA_STREAM_PLAYBACK, nullptr, "audio", &sample_spec, nullptr, nullptr, &error)))
         {
             std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
             return 1;

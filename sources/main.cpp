@@ -13,7 +13,7 @@ enum
 };
 
 constexpr int SAMPLE_RATE = 44100;
-constexpr int FRAME_SIZE = 1024;
+constexpr int FRAME_SIZE = 512;//1024;
 
 class server
 {
@@ -33,7 +33,7 @@ public:
                 if (!ec && bytes_recvd > 0)
                 {
                     int error;
-                    int16_t bufAudio[FRAME_SIZE]; //// * 2];
+                    int16_t bufAudio[FRAME_SIZE * 2];
 
                     if (pa_simple_write(sAudioServer, data_, bytes_recvd, &error) < 0)
                     {
@@ -82,7 +82,7 @@ int runClient(std::string &ip, std::string &port, char const *argv[])
         pa_simple *sAudio = nullptr;
         int error;
 
-        if (!(sAudio = pa_simple_new(nullptr, "DesktopAudioCapture", PA_STREAM_RECORD, nullptr, "audio", &sample_spec, nullptr, nullptr, &error)))
+        if (!(sAudio = pa_simple_new(nullptr, "A.U.D.I.B.L.E Player > (Server)", PA_STREAM_RECORD, nullptr, "audio", &sample_spec, nullptr, nullptr, &error)))
         {
             std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
             return 1;
@@ -100,7 +100,7 @@ int runClient(std::string &ip, std::string &port, char const *argv[])
 
         while (true)
         {
-            int16_t bufAudio[FRAME_SIZE]; //// * 2];
+            int16_t bufAudio[FRAME_SIZE * 2];
             if (pa_simple_read(sAudio, bufAudio, sizeof(bufAudio), &error) < 0)
             {
                 std::cerr << "pa_simple_read() failed: " << error << std::endl;
@@ -126,7 +126,7 @@ int main(int argc, char const *argv[])
     int endStatus(0);
     if (argc != 3)
     {
-        std::cerr << "Usage: Audible <host> <port>\nOr Audible -s|--server <port>";
+        std::cerr << "Usage: Audible <host> <port>\nOr Audible -s|--server <port>\n";
         return 1;
     }
     std::vector<std::string> args(argv, argv + argc);
@@ -144,7 +144,7 @@ int main(int argc, char const *argv[])
         pa_simple *sAudioServer = nullptr;
         int error;
 
-        if (!(sAudioServer = pa_simple_new(nullptr, "DesktopAudioPlayer", PA_STREAM_PLAYBACK, nullptr, "audio", &sample_spec, nullptr, nullptr, &error)))
+        if (!(sAudioServer = pa_simple_new(nullptr, "A.U.D.I.B.L.E Capture < (Client)", PA_STREAM_PLAYBACK, nullptr, "audio", &sample_spec, nullptr, nullptr, &error)))
         {
             std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
             return 1;

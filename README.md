@@ -39,3 +39,13 @@ You should also be able to modify the input and output levels in your settings, 
 ## Audible Client Error: pa_simple_new() failed: No such entity
 If you have this error, you might check that the source exists.<br>
 To do that, follow the instructions in `./source.cfg`
+
+# AudibleJS - A.U.D.I.B.L.E via web browser
+If you want, you can also start a stream accessible from a simple web browser.<br>
+You may only have to modify the **device** properties according to the instructions in `./audibleJS/source.cfg`. 
+<br>
+Then, start the server using:
+```bash
+node audibleJS/index.js
+```
+Finaly, to access it juste type in your browser `http://<server-ip>:3000/Audible.mp3`

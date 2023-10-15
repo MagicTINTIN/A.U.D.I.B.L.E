@@ -71,10 +71,6 @@ int runClient(std::string &ip, std::string &port, char const *argv[], std::strin
 {
     try
     {
-        // boost::asio::io_service io_service;
-        // boost::asio::ip::udp::socket socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12345));
-        // boost::asio::ip::udp::endpoint remote_endpoint;
-
         pa_sample_spec sample_spec;
         sample_spec.format = PA_SAMPLE_S16LE;
         sample_spec.rate = SAMPLE_RATE;
@@ -85,7 +81,7 @@ int runClient(std::string &ip, std::string &port, char const *argv[], std::strin
 
         if (!(sAudio = pa_simple_new(nullptr, "A.U.D.I.B.L.E Capture < (Client)", PA_STREAM_RECORD, source.c_str(), "record", &sample_spec, nullptr, nullptr, &error)))
         {
-            std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
+            std::cerr << "Audible Client ERROR: pa_simple_new() failed: " << pa_strerror(error) << std::endl;
             return 1;
         }
 
@@ -130,7 +126,7 @@ int main(int argc, char const *argv[])
         std::cerr << "Usage: Audible <host> <port>\nOr Audible -s|--server <port>\n";
         return 1;
     }
-    std::ifstream sourceFileFlux("../source.cfg");
+    std::ifstream sourceFileFlux("./source.cfg");
     std::string audioSource;
     if (sourceFileFlux)
     {

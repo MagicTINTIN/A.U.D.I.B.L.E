@@ -2,6 +2,7 @@
 #include <pulse/simple.h>
 #include <pulse/error.h>
 #include <iostream>
+#include <fstream>
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
 
@@ -13,7 +14,7 @@ enum
 };
 
 constexpr int SAMPLE_RATE = 44100;
-constexpr int FRAME_SIZE = 1024/4;//1024;
+constexpr int FRAME_SIZE = 1024 / 4; // 1024;
 
 class server
 {
@@ -66,7 +67,7 @@ private:
     char data_[max_length];
 };
 
-int runClient(std::string &ip, std::string &port, char const *argv[])
+int runClient(std::string &ip, std::string &port, char const *argv[], std::string &source)
 {
     try
     {
@@ -82,7 +83,7 @@ int runClient(std::string &ip, std::string &port, char const *argv[])
         pa_simple *sAudio = nullptr;
         int error;
 
-        if (!(sAudio = pa_simple_new(nullptr, "A.U.D.I.B.L.E Capture < (Client)", PA_STREAM_RECORD, "alsa_output.pci-0000_00_0e.0.analog-stereo.monitor", "record", &sample_spec, nullptr, nullptr, &error)))
+        if (!(sAudio = pa_simple_new(nullptr, "A.U.D.I.B.L.E Capture < (Client)", PA_STREAM_RECORD, source.c_str(), "record", &sample_spec, nullptr, nullptr, &error)))
         {
             std::cerr << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
             return 1;
@@ -96,7 +97,7 @@ int runClient(std::string &ip, std::string &port, char const *argv[])
         udp::endpoint endpoint =
             *resolver.resolve(udp::v4(), argv[1], argv[2]).begin();
 
-        std::cout << "Trying to access server " << ip << ":" << port << std::endl;
+        std::cout << "Sending sound to server " << ip << ":" << port << std::endl;
 
         while (true)
         {
@@ -129,6 +130,17 @@ int main(int argc, char const *argv[])
         std::cerr << "Usage: Audible <host> <port>\nOr Audible -s|--server <port>\n";
         return 1;
     }
+    std::ifstream sourceFileFlux("../source.cfg");
+    std::string audioSource;
+    if (sourceFileFlux)
+    {
+        getline(sourceFileFlux, audioSource);
+    }
+    else
+    {
+        std::cout << "ERROR: Impossible to open ./source.cfg" << std::endl;
+    }
+    sourceFileFlux.close();
     std::vector<std::string> args(argv, argv + argc);
     if (args[1] == "-s" || args[1] == "--server")
     {
@@ -159,7 +171,7 @@ int main(int argc, char const *argv[])
     else
     {
         std::cout << "Starting A.U.D.I.B.L.E client..." << std::endl;
-        endStatus = runClient(args[1], args[2], argv);
+        endStatus = runClient(args[1], args[2], argv, audioSource);
     }
 
     return endStatus;

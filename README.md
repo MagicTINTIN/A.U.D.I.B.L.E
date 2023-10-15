@@ -7,8 +7,7 @@
 # Installation
 ## Requirements
 The librairies needed are : Boost and PulseAudio if it is not yet installed<br>
-- Linux
-  - Debian/Ubuntu
+-  Debian/Ubuntu
 ```bash
 sudo apt install libboost-all-dev pulseaudio
 ```
@@ -23,7 +22,7 @@ git clone https://github.com/MagicTINTIN/A.U.D.I.B.L.E
 cd A.U.D.I.B.L.E
 ./cmake.sh --release
 ```
-
+---
 # Start and use A.U.D.I.B.L.E
 To start a server to receive the sounds from another computer
 ```bash
@@ -40,6 +39,7 @@ You should also be able to modify the input and output levels in your settings, 
 If you have this error, you might check that the source exists.<br>
 To do that, follow the instructions in `./source.cfg`
 
+---
 # AudibleJS - A.U.D.I.B.L.E via web browser
 If you want, you can also start a stream accessible from a simple web browser.<br>
 You may only have to modify the **device** properties according to the instructions in `./audibleJS/source.cfg`. 
